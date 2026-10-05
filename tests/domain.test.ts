@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {today,weekStart,addDays,validDay,isOnDay,newItem,parseMoney,validateItem} from '../src/domain.ts';
+test('Istanbul day is used across the UTC midnight boundary',()=>{assert.equal(today(new Date('2026-10-05T22:30:00Z')),'2026-10-06');assert.equal(weekStart('2026-10-04'),'2026-09-28');assert.equal(addDays('2026-12-31',1),'2027-01-01')});
+test('impossible dates and reversed trip ranges are rejected',()=>{assert.equal(validDay('2026-02-29'),false);assert.equal(validDay('2028-02-29'),true);assert.throws(()=>validateItem({...newItem('trip'),title:'Gezi',date:'2026-10-10',endDate:'2026-10-09'}))});
+test('multi-day trips appear on every inclusive calendar day',()=>{const trip={...newItem('trip'),title:'Gezi',date:'2026-10-10',endDate:'2026-10-12'};assert.equal(isOnDay(trip,'2026-10-11'),true);assert.equal(isOnDay(trip,'2026-10-12'),true);assert.equal(isOnDay(trip,'2026-10-13'),false)});
+test('money is exact integer cents; ambiguous and invalid amounts are refused',()=>{assert.equal(parseMoney('1250,50'),125050);assert.equal(parseMoney('0.01'),1);assert.equal(parseMoney('10'),1000);for(const value of ['1.250,50','1e6','-12','0','1.001','Infinity'])assert.throws(()=>parseMoney(value))});
+test('import validation rejects inherited kinds and strips unrelated fields',()=>{const good={...newItem(),title:'Bir iş'};assert.throws(()=>validateItem({...good,kind:'__proto__'}));assert.throws(()=>validateItem({...good,date:12}));assert.throws(()=>validateItem({...good,title:{value:'x'}}));assert.equal('privateSecret' in validateItem({...good,privateSecret:'not allowed'}),false)});

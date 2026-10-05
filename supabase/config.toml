@@ -1,0 +1,5 @@
+project_id = "aryaland"
+[functions.budget]
+# Handler verifies the bearer token with Supabase Auth for EVERY request.
+# Supports both legacy anon keys and new publishable keys.
+verify_jwt = true
